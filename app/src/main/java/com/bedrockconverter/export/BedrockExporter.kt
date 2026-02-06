@@ -3,6 +3,7 @@ package com.bedrockconverter.export
 
 import android.content.Context
 import com.bedrockconverter.model.*
+import com.bedrockconverter.model.ValidationResult
 import com.bedrockconverter.utils.CoordinateConverter
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext

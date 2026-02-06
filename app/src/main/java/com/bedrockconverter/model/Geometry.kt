@@ -37,6 +37,24 @@ data class Geometry(
         val combined = combinedMesh()
         return BoundingBox.fromVertices(combined.vertices)
     }
+
+    fun scaled(scale: Float): Geometry {
+        return Geometry(
+            meshes = meshes.map { mesh ->
+                mesh.copy(
+                    vertices = mesh.vertices.map { it * scale }.toFloatArray()
+                )
+            },
+            bones = bones.map { bone ->
+                bone.copy(
+                    pivot = bone.pivot * scale,
+                    bindPose = bone.bindPose.copy(
+                        position = bone.bindPose.position * scale
+                    )
+                )
+            }
+        )
+    }
 }
 
 /**
@@ -111,8 +129,10 @@ data class BedrockCube(
     val origin: Vector3,
     val size: Vector3,
     val uv: Vector2,
-    val inflate: Float = 0f,
-    val mirror: Boolean = false
+    val inflate: Float? = null,
+    val mirror: Boolean? = null,
+    val pivot: Vector3? = null,
+    val rotation: Vector3? = null
 )
 
 /**
