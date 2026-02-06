@@ -15,11 +15,13 @@ data class Geometry(
         val vertices = mutableListOf<Float>()
         val indices = mutableListOf<Int>()
         val uvs = mutableListOf<Float>()
+        val normals = mutableListOf<Float>()
         var indexOffset = 0
 
         for (mesh in meshes) {
             vertices.addAll(mesh.vertices.toList())
             uvs.addAll(mesh.uvs.toList())
+            normals.addAll(mesh.normals.toList())
             for (index in mesh.indices) {
                 indices.add(index + indexOffset)
             }
@@ -29,7 +31,8 @@ data class Geometry(
         return Mesh(
             vertices = vertices.toFloatArray(),
             indices = indices.toIntArray(),
-            uvs = uvs.toFloatArray()
+            uvs = uvs.toFloatArray(),
+            normals = normals.toFloatArray()
         )
     }
 
@@ -63,8 +66,12 @@ data class Geometry(
 data class Mesh(
     val vertices: FloatArray = floatArrayOf(),
     val indices: IntArray = intArrayOf(),
-    val uvs: FloatArray = floatArrayOf()
+    val uvs: FloatArray = floatArrayOf(),
+    val normals: FloatArray = floatArrayOf()
 ) {
+    val hasNormals: Boolean get() = normals.isNotEmpty()
+    val hasUvs: Boolean get() = uvs.isNotEmpty()
+
     override fun equals(other: Any?): Boolean {
         if (this === other) return true
         if (javaClass != other?.javaClass) return false
@@ -74,6 +81,7 @@ data class Mesh(
         if (!vertices.contentEquals(other.vertices)) return false
         if (!indices.contentEquals(other.indices)) return false
         if (!uvs.contentEquals(other.uvs)) return false
+        if (!normals.contentEquals(other.normals)) return false
 
         return true
     }
@@ -82,6 +90,7 @@ data class Mesh(
         var result = vertices.contentHashCode()
         result = 31 * result + indices.contentHashCode()
         result = 31 * result + uvs.contentHashCode()
+        result = 31 * result + normals.contentHashCode()
         return result
     }
 }
