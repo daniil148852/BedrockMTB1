@@ -357,20 +357,20 @@ class GeometryGenerator {
                             else -> append("              \"uv\": [0, 0]")
                         }
 
-                        cube.pivot?.let {
-                            append(",\n              \"pivot\": [${it.x}, ${it.y}, ${it.z}]")
+                        cube.pivot?.let { pivot ->
+                            append(",\n              \"pivot\": [${pivot.x}, ${pivot.y}, ${pivot.z}]")
                         }
 
-                        cube.rotation?.let {
-                            append(",\n              \"rotation\": [${it.x}, ${it.y}, ${it.z}]")
+                        cube.rotation?.let { rotation ->
+                            append(",\n              \"rotation\": [${rotation.x}, ${rotation.y}, ${rotation.z}]")
                         }
 
-                        cube.inflate?.let {
-                            append(",\n              \"inflate\": $it")
+                        cube.inflate?.let { inflate ->
+                            append(",\n              \"inflate\": $inflate")
                         }
 
-                        cube.mirror?.let {
-                            append(",\n              \"mirror\": $it")
+                        cube.mirror?.let { mirror ->
+                            append(",\n              \"mirror\": $mirror")
                         }
 
                         append("\n            }")
