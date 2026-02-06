@@ -97,11 +97,11 @@ class PreviewViewModel(application: Application) : AndroidViewModel(application)
      * Reset camera to default position
      */
     fun resetCamera() {
-        _cameraState.update { 
+        _cameraState.update { state ->
             CameraState().copy(
                 // Keep zoom settings but reset position
-                minZoom = it.minZoom,
-                maxZoom = it.maxZoom
+                minZoom = state.minZoom,
+                maxZoom = state.maxZoom
             )
         }
 
