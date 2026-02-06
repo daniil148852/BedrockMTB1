@@ -126,35 +126,8 @@ class CoordinateConverter {
     private fun convertBone(bone: Bone): Bone {
         val convertedPivot = convertVector(bone.pivot)
         val convertedRotation = convertRotation(bone.rotation)
-        val convertedCubes = bone.cubes.map { cube ->
-            convertCube(cube)
-        }
 
         return bone.copy(
-            pivot = convertedPivot,
-            rotation = convertedRotation,
-            cubes = convertedCubes
-        )
-    }
-
-    /**
-     * Convert a cube to Minecraft coordinate system
-     */
-    private fun convertCube(cube: Cube): Cube {
-        val convertedOrigin = convertVector(cube.origin)
-        val convertedPivot = convertVector(cube.pivot)
-        val convertedRotation = convertRotation(cube.rotation)
-
-        // Size doesn't need axis swapping, just ensure positive values
-        val convertedSize = Vector3(
-            kotlin.math.abs(cube.size.x),
-            kotlin.math.abs(cube.size.y),
-            kotlin.math.abs(cube.size.z)
-        )
-
-        return cube.copy(
-            origin = convertedOrigin,
-            size = convertedSize,
             pivot = convertedPivot,
             rotation = convertedRotation
         )
