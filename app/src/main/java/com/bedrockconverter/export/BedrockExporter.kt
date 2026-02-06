@@ -122,7 +122,7 @@ class BedrockExporter(private val context: Context) {
             onProgress(ExportProgress(0.9f, ExportStep.PACKAGING, "Creating .mcaddon package..."))
 
             // Package into .mcaddon
-            val mcaddonFile = mcaddonPackager.package(
+            val mcaddonFile = mcaddonPackager.createPackage(
                 workDir = workDir,
                 outputName = settings.entityName
             )
@@ -160,7 +160,9 @@ class BedrockExporter(private val context: Context) {
     }
 
     private fun createWorkingDirectory(name: String): File {
-        val workDir = File(context.cacheDir, "export_${name}_${System.currentTimeMillis()}")
+        // Use clean string concatenation to avoid issues
+        val dirName = "export_" + name + "_" + System.currentTimeMillis()
+        val workDir = File(context.cacheDir, dirName)
         workDir.mkdirs()
         return workDir
     }
