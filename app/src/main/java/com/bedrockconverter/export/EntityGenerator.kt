@@ -78,7 +78,7 @@ class EntityGenerator {
 
         return ClientEntity(
             identifier = settings.fullIdentifier,
-            materials = mapOf("default" to "entity_alphatest"),
+            materials = mapOf("default" to "entity_alphatest_one_sided"),
             textures = mapOf("default" to texturePath),
             geometry = mapOf("default" to settings.geometryIdentifier),
             renderControllers = listOf(settings.renderControllerIdentifier),
@@ -167,6 +167,11 @@ class EntityGenerator {
         "value": ${entity.components.scale}
       }""")
             }
+
+            // Pushable (static)
+            components.add("""      "minecraft:push_through": {
+        "value": 0
+      }""")
 
             // Damage sensor (make it invulnerable)
             components.add("""      "minecraft:damage_sensor": {

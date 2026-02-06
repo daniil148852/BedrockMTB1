@@ -26,8 +26,7 @@ class CoordinateConverter {
         const val PIXELS_PER_BLOCK = 16f
         
         // Default scale factor for converting units
-        // Increased to make models larger by default in Minecraft
-        const val DEFAULT_SCALE = 16f
+        const val DEFAULT_SCALE = 1f
     }
 
     /**

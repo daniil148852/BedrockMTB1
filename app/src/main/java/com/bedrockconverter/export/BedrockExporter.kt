@@ -52,8 +52,8 @@ class BedrockExporter(private val context: Context) {
             // Convert coordinate system (Y-up to Minecraft's coordinate system)
             val convertedModel = coordinateConverter.convertToMinecraft(model)
 
-            // Apply user scale multiplied by our internal default scale
-            val finalScale = settings.scale * CoordinateConverter.DEFAULT_SCALE
+            // Apply user scale multiplied by Minecraft's pixels-per-block conversion
+            val finalScale = settings.scale * CoordinateConverter.PIXELS_PER_BLOCK
             val scaledGeometry = convertedModel.geometry.scaled(finalScale)
 
             onProgress(ExportProgress(0.2f, ExportStep.CONVERTING_GEOMETRY, "Generating Bedrock geometry..."))
