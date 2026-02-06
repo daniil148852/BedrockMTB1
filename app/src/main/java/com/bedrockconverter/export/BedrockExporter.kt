@@ -146,7 +146,7 @@ class BedrockExporter(private val context: Context) {
                 warnings = warnings,
                 stats = ExportStats(
                     originalVertices = model.vertexCount,
-                    exportedCubes = bedrockGeometry.bones.sumOf { it.cubes.size },
+                    exportedCubes = bedrockGeometry.bones.sumOf { bone -> bone.cubes.size },
                     textureCount = processedTextures.size,
                     totalFileSize = mcaddonFile.length(),
                     exportDurationMs = duration
