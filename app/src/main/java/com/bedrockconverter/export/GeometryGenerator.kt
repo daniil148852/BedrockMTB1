@@ -5,6 +5,8 @@ import com.bedrockconverter.model.*
 import kotlin.math.abs
 import kotlin.math.ceil
 import kotlin.math.floor
+import kotlin.math.max
+import kotlin.math.min
 
 /**
  * Generates Minecraft Bedrock geometry from 3D mesh data
@@ -14,7 +16,7 @@ class GeometryGenerator {
 
     companion object {
         private const val MIN_CUBE_SIZE = 0.05f
-        private const val VOXEL_RESOLUTION = 32 // Voxels per unit (increased for more detail)
+        private const val VOXEL_RESOLUTION = 32 // Voxels per unit
     }
 
     /**
@@ -76,7 +78,7 @@ class GeometryGenerator {
     }
 
     /**
-     * Voxelize a mesh into a 3D grid
+     * Voxelize a mesh into a 3D grid using AABB-Triangle intersection
      */
     private fun voxelizeMesh(mesh: Mesh, bounds: BoundingBox): Set<VoxelCoord> {
         val voxels = mutableSetOf<VoxelCoord>()
@@ -98,7 +100,7 @@ class GeometryGenerator {
             val v1 = Vector3(mesh.vertices[i1], mesh.vertices[i1 + 1], mesh.vertices[i1 + 2])
             val v2 = Vector3(mesh.vertices[i2], mesh.vertices[i2 + 1], mesh.vertices[i2 + 2])
 
-            voxelizeTriangle(v0, v1, v2, bounds, voxelSize, voxels)
+            voxelizeTriangle(v0, v1, v2, voxelSize, voxels)
         }
 
         return voxels
@@ -108,7 +110,6 @@ class GeometryGenerator {
         v0: Vector3,
         v1: Vector3,
         v2: Vector3,
-        bounds: BoundingBox,
         voxelSize: Float,
         voxels: MutableSet<VoxelCoord>
     ) {
@@ -119,6 +120,8 @@ class GeometryGenerator {
         val minZ = floor(minOf(v0.z, v1.z, v2.z) / voxelSize).toInt()
         val maxZ = ceil(maxOf(v0.z, v1.z, v2.z) / voxelSize).toInt()
 
+        val halfSize = voxelSize / 2f
+
         for (x in minX..maxX) {
             for (y in minY..maxY) {
                 for (z in minZ..maxZ) {
@@ -128,7 +131,7 @@ class GeometryGenerator {
                         (z + 0.5f) * voxelSize
                     )
 
-                    if (isVoxelNearTriangle(voxelCenter, v0, v1, v2, voxelSize)) {
+                    if (intersectTriangleAABB(v0, v1, v2, voxelCenter, halfSize)) {
                         voxels.add(VoxelCoord(x, y, z))
                     }
                 }
@@ -136,23 +139,57 @@ class GeometryGenerator {
         }
     }
 
-    private fun isVoxelNearTriangle(
-        point: Vector3,
-        v0: Vector3,
-        v1: Vector3,
-        v2: Vector3,
-        voxelSize: Float
-    ): Boolean {
-        return pointToTriangleDistance(point, v0, v1, v2) < voxelSize * 1.5f
+    /**
+     * AABB-Triangle intersection test based on Akenine-Möller
+     */
+    private fun intersectTriangleAABB(v0: Vector3, v1: Vector3, v2: Vector3, center: Vector3, halfSize: Float): Boolean {
+        // Translate triangle so that the AABB center is at the origin
+        val a = v0 - center
+        val b = v1 - center
+        val c = v2 - center
+
+        // Test the three axes corresponding to the face normals of the AABB
+        if (minOf(a.x, b.x, c.x) > halfSize || maxOf(a.x, b.x, c.x) < -halfSize) return false
+        if (minOf(a.y, b.y, c.y) > halfSize || maxOf(a.y, b.y, c.y) < -halfSize) return false
+        if (minOf(a.z, b.z, c.z) > halfSize || maxOf(a.z, b.z, c.z) < -halfSize) return false
+
+        // Test the nine axes given by the cross products of triangle edges and AABB face normals
+        val e0 = b - a
+        val e1 = c - b
+        val e2 = a - c
+
+        // Example: Axis X cross e0
+        if (!testAxis(0f, -e0.z, e0.y, a, b, c, halfSize)) return false
+        if (!testAxis(0f, -e1.z, e1.y, a, b, c, halfSize)) return false
+        if (!testAxis(0f, -e2.z, e2.y, a, b, c, halfSize)) return false
+
+        // Example: Axis Y cross e0
+        if (!testAxis(e0.z, 0f, -e0.x, a, b, c, halfSize)) return false
+        if (!testAxis(e1.z, 0f, -e1.x, a, b, c, halfSize)) return false
+        if (!testAxis(e2.z, 0f, -e2.x, a, b, c, halfSize)) return false
+
+        // Example: Axis Z cross e0
+        if (!testAxis(-e0.y, e0.x, 0f, a, b, c, halfSize)) return false
+        if (!testAxis(-e1.y, e1.x, 0f, a, b, c, halfSize)) return false
+        if (!testAxis(-e2.y, e2.x, 0f, a, b, c, halfSize)) return false
+
+        // Test the triangle's plane normal
+        val normal = Vector3(
+            e0.y * e1.z - e0.z * e1.y,
+            e0.z * e1.x - e0.x * e1.z,
+            e0.x * e1.y - e0.y * e1.x
+        )
+        val d = normal.x * a.x + normal.y * a.y + normal.z * a.z
+        val r = halfSize * (abs(normal.x) + abs(normal.y) + abs(normal.z))
+        return abs(d) <= r
     }
 
-    private fun pointToTriangleDistance(p: Vector3, v0: Vector3, v1: Vector3, v2: Vector3): Float {
-        val center = Vector3(
-            (v0.x + v1.x + v2.x) / 3f,
-            (v0.y + v1.y + v2.y) / 3f,
-            (v0.z + v1.z + v2.z) / 3f
-        )
-        return (p - center).length()
+    private fun testAxis(ax: Float, ay: Float, az: Float, a: Vector3, b: Vector3, c: Vector3, halfSize: Float): Boolean {
+        val p0 = ax * a.x + ay * a.y + az * a.z
+        val p1 = ax * b.x + ay * b.y + az * b.z
+        val p2 = ax * c.x + ay * c.y + az * c.z
+        val r = halfSize * (abs(ax) + abs(ay) + abs(az))
+        return maxOf(p0, p1, p2) >= -r && minOf(p0, p1, p2) <= r
     }
 
     private fun optimizeVoxels(voxels: Set<VoxelCoord>, bounds: BoundingBox): List<VoxelCube> {
@@ -235,8 +272,8 @@ class GeometryGenerator {
     }
 
     private fun calculateBoxUV(cube: VoxelCube, bounds: BoundingBox): Vector2 {
-        val u = ((cube.origin.x - bounds.min.x) / bounds.width * 64).toInt().coerceIn(0, 63)
-        val v = ((cube.origin.y - bounds.min.y) / bounds.height * 64).toInt().coerceIn(0, 63)
+        val u = ((cube.origin.x - bounds.min.x) / max(0.001f, bounds.width) * 64).toInt().coerceIn(0, 63)
+        val v = ((cube.origin.y - bounds.min.y) / max(0.001f, bounds.height) * 64).toInt().coerceIn(0, 63)
         return Vector2(u.toFloat(), v.toFloat())
     }
 
