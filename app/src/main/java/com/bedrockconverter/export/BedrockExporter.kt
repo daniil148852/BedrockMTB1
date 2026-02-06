@@ -160,7 +160,7 @@ class BedrockExporter(private val context: Context) {
     }
 
     private fun createWorkingDirectory(name: String): File {
-        val workDir = File(context.cacheDir, "export_$name_${System.currentTimeMillis()}")
+        val workDir = File(context.cacheDir, "export_${name}_${System.currentTimeMillis()}")
         workDir.mkdirs()
         return workDir
     }
