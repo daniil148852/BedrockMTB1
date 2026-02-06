@@ -74,4 +74,156 @@ fun ScaleSelector(
         Text(
             text = "Custom Scale",
             style = MaterialTheme.typography.labelMedium,
-            color = MaterialTheme.colorScheme.onSurface.copy
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+        )
+
+        Row(
+            modifier = Modifier.fillMaxWidth(),
+            verticalAlignment = Alignment.CenterVertically,
+            horizontalArrangement = Arrangement.spacedBy(16.dp)
+        ) {
+            Slider(
+                value = customScale,
+                onValueChange = { 
+                    customScale = it
+                    useCustom = true
+                },
+                valueRange = 0.1f..5f,
+                steps = 48,
+                modifier = Modifier.weight(1f),
+                colors = SliderDefaults.colors(
+                    thumbColor = BedrockColors.Primary,
+                    activeTrackColor = BedrockColors.Primary
+                )
+            )
+
+            Text(
+                text = String.format("%.2fx", customScale),
+                style = MaterialTheme.typography.titleSmall,
+                color = if (useCustom) BedrockColors.Primary else MaterialTheme.colorScheme.onSurface,
+                modifier = Modifier.width(60.dp),
+                textAlign = TextAlign.End
+            )
+        }
+
+        // Apply Custom Button
+        if (useCustom) {
+            Button(
+                onClick = { onScaleSelected(customScale) },
+                modifier = Modifier.fillMaxWidth(),
+                colors = ButtonDefaults.buttonColors(
+                    containerColor = BedrockColors.Primary
+                )
+            ) {
+                Text("Apply Custom Scale (${String.format("%.2fx", customScale)})")
+            }
+        }
+
+        Spacer(modifier = Modifier.height(8.dp))
+
+        // Scale Reference Info
+        ScaleReferenceCard()
+
+        Spacer(modifier = Modifier.height(16.dp))
+    }
+}
+
+@Composable
+private fun ScaleChip(
+    scale: Float,
+    isSelected: Boolean,
+    onClick: () -> Unit,
+    modifier: Modifier = Modifier
+) {
+    val backgroundColor = if (isSelected) {
+        BedrockColors.Primary
+    } else {
+        MaterialTheme.colorScheme.surfaceVariant
+    }
+
+    val textColor = if (isSelected) {
+        MaterialTheme.colorScheme.onPrimary
+    } else {
+        MaterialTheme.colorScheme.onSurface
+    }
+
+    val borderColor = if (isSelected) {
+        BedrockColors.Primary
+    } else {
+        MaterialTheme.colorScheme.outline.copy(alpha = 0.3f)
+    }
+
+    Box(
+        modifier = modifier
+            .clip(BedrockShapes.small)
+            .background(backgroundColor)
+            .border(
+                width = 1.dp,
+                color = borderColor,
+                shape = BedrockShapes.small
+            )
+            .clickable { onClick() }
+            .padding(vertical = 12.dp),
+        contentAlignment = Alignment.Center
+    ) {
+        Text(
+            text = "${scale}x",
+            style = MaterialTheme.typography.labelLarge,
+            color = textColor,
+            textAlign = TextAlign.Center
+        )
+    }
+}
+
+@Composable
+private fun ScaleReferenceCard() {
+    Card(
+        modifier = Modifier.fillMaxWidth(),
+        shape = BedrockShapes.small,
+        colors = CardDefaults.cardColors(
+            containerColor = MaterialTheme.colorScheme.surfaceVariant.copy(alpha = 0.5f)
+        )
+    ) {
+        Column(
+            modifier = Modifier.padding(12.dp)
+        ) {
+            Text(
+                text = "Scale Reference",
+                style = MaterialTheme.typography.labelMedium,
+                color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.7f)
+            )
+
+            Spacer(modifier = Modifier.height(8.dp))
+
+            ScaleReferenceRow(scale = "0.25x", description = "Small item (1/4 block)")
+            ScaleReferenceRow(scale = "0.5x", description = "Half block size")
+            ScaleReferenceRow(scale = "1x", description = "Standard (1 block = 1 unit)")
+            ScaleReferenceRow(scale = "2x", description = "Large (2 blocks)")
+            ScaleReferenceRow(scale = "4x", description = "Very large (4 blocks)")
+        }
+    }
+}
+
+@Composable
+private fun ScaleReferenceRow(
+    scale: String,
+    description: String
+) {
+    Row(
+        modifier = Modifier
+            .fillMaxWidth()
+            .padding(vertical = 2.dp),
+        horizontalArrangement = Arrangement.SpaceBetween
+    ) {
+        Text(
+            text = scale,
+            style = MaterialTheme.typography.bodySmall,
+            color = BedrockColors.Primary
+        )
+        Text(
+            text = description,
+            style = MaterialTheme.typography.bodySmall,
+            color = MaterialTheme.colorScheme.onSurface.copy(alpha = 0.6f)
+        )
+    }
+}
