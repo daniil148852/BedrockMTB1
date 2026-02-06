@@ -27,7 +27,7 @@ class McaddonPackager(private val context: Context) {
     /**
      * Package working directory into .mcaddon file
      */
-    fun `package`(workDir: File, outputName: String): File {
+    fun createPackage(workDir: File, outputName: String): File {
         val outputDir = getOutputDirectory()
         val mcaddonFile = File(outputDir, "${sanitizeFileName(outputName)}$MCADDON_EXTENSION")
 
