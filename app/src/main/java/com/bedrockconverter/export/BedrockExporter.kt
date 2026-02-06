@@ -52,8 +52,9 @@ class BedrockExporter(private val context: Context) {
             // Convert coordinate system (Y-up to Minecraft's coordinate system)
             val convertedModel = coordinateConverter.convertToMinecraft(model)
 
-            // Apply scale
-            val scaledGeometry = convertedModel.geometry.scaled(settings.scale)
+            // Apply user scale multiplied by our internal default scale
+            val finalScale = settings.scale * CoordinateConverter.DEFAULT_SCALE
+            val scaledGeometry = convertedModel.geometry.scaled(finalScale)
 
             onProgress(ExportProgress(0.2f, ExportStep.CONVERTING_GEOMETRY, "Generating Bedrock geometry..."))
 
@@ -63,7 +64,7 @@ class BedrockExporter(private val context: Context) {
                 identifier = settings.geometryIdentifier,
                 textureWidth = getTextureWidth(convertedModel),
                 textureHeight = getTextureHeight(convertedModel),
-                bounds = convertedModel.bounds?.scaled(settings.scale)
+                bounds = convertedModel.bounds?.scaled(finalScale)
             )
 
             onProgress(ExportProgress(0.4f, ExportStep.PROCESSING_TEXTURES, "Processing textures..."))
@@ -78,9 +79,9 @@ class BedrockExporter(private val context: Context) {
 
             // Calculate collision box
             val collisionWidth = settings.collisionWidth
-                ?: (convertedModel.bounds?.width?.times(settings.scale) ?: 1f)
+                ?: (convertedModel.bounds?.width?.times(finalScale) ?: 1f)
             val collisionHeight = settings.collisionHeight
-                ?: (convertedModel.bounds?.height?.times(settings.scale) ?: 1f)
+                ?: (convertedModel.bounds?.height?.times(finalScale) ?: 1f)
 
             // Generate entity definitions
             val entityData = entityGenerator.generate(

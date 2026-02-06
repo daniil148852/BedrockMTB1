@@ -13,8 +13,8 @@ import kotlin.math.floor
 class GeometryGenerator {
 
     companion object {
-        private const val MIN_CUBE_SIZE = 0.1f
-        private const val VOXEL_RESOLUTION = 16 // Voxels per unit
+        private const val MIN_CUBE_SIZE = 0.05f
+        private const val VOXEL_RESOLUTION = 32 // Voxels per unit (increased for more detail)
     }
 
     /**
