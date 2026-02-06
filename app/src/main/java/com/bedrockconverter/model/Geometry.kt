@@ -29,6 +29,7 @@ data class Geometry(
         }
 
         return Mesh(
+            name = "combined",
             vertices = vertices.toFloatArray(),
             indices = indices.toIntArray(),
             uvs = uvs.toFloatArray(),
@@ -64,10 +65,12 @@ data class Geometry(
  * A single mesh with vertices, indices, and UVs
  */
 data class Mesh(
+    val name: String = "mesh",
     val vertices: FloatArray = floatArrayOf(),
     val indices: IntArray = intArrayOf(),
     val uvs: FloatArray = floatArrayOf(),
-    val normals: FloatArray = floatArrayOf()
+    val normals: FloatArray = floatArrayOf(),
+    val materialId: String? = null
 ) {
     val hasNormals: Boolean get() = normals.isNotEmpty()
     val hasUvs: Boolean get() = uvs.isNotEmpty()
@@ -78,19 +81,23 @@ data class Mesh(
 
         other as Mesh
 
+        if (name != other.name) return false
         if (!vertices.contentEquals(other.vertices)) return false
         if (!indices.contentEquals(other.indices)) return false
         if (!uvs.contentEquals(other.uvs)) return false
         if (!normals.contentEquals(other.normals)) return false
+        if (materialId != other.materialId) return false
 
         return true
     }
 
     override fun hashCode(): Int {
-        var result = vertices.contentHashCode()
+        var result = name.hashCode()
+        result = 31 * result + vertices.contentHashCode()
         result = 31 * result + indices.contentHashCode()
         result = 31 * result + uvs.contentHashCode()
         result = 31 * result + normals.contentHashCode()
+        result = 31 * result + (materialId?.hashCode() ?: 0)
         return result
     }
 }
